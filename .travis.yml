@@ -1,0 +1,26 @@
+env:
+  global:
+    - BERKSHELF_API_PATH=${PWD}
+    - secure: "RWHpq7hOCwitDeftpQW/7OmXy3/R92B4KCccRrfLhRrxeVY8LS5ceRLxlCXcSTmrNAWtOQlpdnP6jx6gtoLNM0hkLWh0+WSuGFSKaDZDVx+7ZhSPxTTApvvk2EOuJ20/6ghbVDtZM0oDaJW0F8kFk9B/uyEC8mzeM22vasDjhx4="
+
+cache:
+  - apt
+  - bundler
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_59b1df365a6d_key -iv $encrypted_59b1df365a6d_iv -in id_test-kitchen-berks-api.enc -out id_test-kitchen-berks-api -d
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libarchive-dev
+
+before_script:
+  - nohup bundle exec berks-api 2>&1 & echo $! > nohup.pid
+  - sleep 10
+  - travis_retry bundle exec berks vendor
+  - kill $(cat nohup.pid)
+
+script:
+  - bundle exec foodcritic --epic-fail any ./
+  - bundle exec kitchen test --concurrency --destroy=always
+
+after_script:
+  - bundle exec kitchen destroy all

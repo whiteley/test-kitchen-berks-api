@@ -1,0 +1,32 @@
+---
+driver:
+  name: ec2
+  aws_access_key_id: <%= ENV['AWS_ACCESS_ID'] %>
+  aws_secret_access_key: <%= ENV['AWS_ACCESS_SECRET'] %>
+  aws_ssh_key_id: test-kitchen-berks-api
+  region: us-west-2
+  availability_zone: us-west-2c
+
+  tags:
+    test_kitchen: true
+    cookbook: "<%= File.basename Dir.pwd %>"
+    <% if ENV['TRAVIS'] %>
+    travis: true
+    travis_build: <%= ENV['TRAVIS_JOB_NUMBER'].dump %>
+    travis_repo: <%= ENV['TRAVIS_REPO_SLUG'].dump %>
+    travis_branch: <%= ENV['TRAVIS_BRANCH'].dump %>
+    <% end %>
+
+  ssh_key: ./id_test-kitchen-berks-api
+  require_chef_omnibus: latest
+
+platforms:
+  - name: ubuntu-14.04
+    driver:
+      image_id: ami-cd5311fd
+      username: ubuntu
+
+suites:
+  - name: default
+    run_list:
+      - recipe[test-kitchen-berks-api]
